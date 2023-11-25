@@ -82,6 +82,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Logger.cs" />
     <Compile Include="ValidateAssembly.cs" />
     <Compile Include="Worker.cs" />
     <Compile Include="Program.cs" />

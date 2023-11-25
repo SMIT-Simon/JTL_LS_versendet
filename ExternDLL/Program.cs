@@ -20,25 +20,26 @@ namespace ExternDLL
 
         static void StartServer()
         {
-            // Initialisieren des HttpListener, der HTTP-Anfragen entgegennimmt
             listener = new HttpListener();
-            listener.Prefixes.Add("http://localhost:5000/"); // Definieren des Endpunkts (URL)
+            listener.Prefixes.Add("http://localhost:5000/");
             listener.Start();
             Console.WriteLine("Listening for connections on http://localhost:5000/");
+
+            // Logger initialisieren
+            Logger logger = new Logger(@"C:\log\");
 
             // Endlosschleife für das kontinuierliche Hören auf Anfragen
             while (true)
             {
-                HandleIncomingConnections().GetAwaiter().GetResult();
+                HandleIncomingConnections(logger).GetAwaiter().GetResult();
             }
         }
 
-        static async Task HandleIncomingConnections()
+        static async Task HandleIncomingConnections(Logger logger)
         {
             int kUser = 0; // Vorab initialisieren
             int kLieferschein = 0; // Vorab initialisieren
 
-            // Warten auf eine eingehende HTTP-Anfrage
             HttpListenerContext ctx = await listener.GetContextAsync();
 
             HttpListenerRequest req = ctx.Request;
@@ -46,14 +47,13 @@ namespace ExternDLL
 
             if (req.HttpMethod == "POST")
             {
+                string postData; // Deklaration nur im inneren Bereich
                 using (Stream body = req.InputStream)
                 using (StreamReader reader = new StreamReader(body, req.ContentEncoding))
                 {
-                    // Lesen des POST-Datenstroms (Parameter der Anfrage)
-                    string postData = reader.ReadToEnd();
+                    postData = reader.ReadToEnd(); // Keine erneute Deklaration hier
                     string[] parameters = postData.Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    // Verarbeiten der empfangenen Parameter
                     foreach (string parameter in parameters)
                     {
                         string[] keyValue = parameter.Split('=');
@@ -84,22 +84,25 @@ namespace ExternDLL
 
                 worker.JTL_WorkflowLieferschein(server, datenbank, benutzer, passwort, kUser, kLieferschein, eventID);
 
-                // Validieren der Assembly (falls notwendig)
                 ValidateAssembly validateAssembly = new ValidateAssembly();
                 if (!validateAssembly.IsValid)
                     return;
+
+                // Anfrage protokollieren
+                string requestMethod = req.HttpMethod;
+                string requestParameters = postData;
+                logger.LogRequest(requestMethod, requestParameters);
             }
 
-            // Erstellen der HTTP-Antwort
             string responseString = $"KUser: {kUser}, KLieferschein: {kLieferschein}";
             byte[] responseData = Encoding.UTF8.GetBytes(responseString);
             resp.ContentType = "text/plain";
             resp.ContentEncoding = Encoding.UTF8;
             resp.ContentLength64 = responseData.LongLength;
 
-            // Senden der HTTP-Antwort
             await resp.OutputStream.WriteAsync(responseData, 0, responseData.Length);
             resp.Close();
         }
+
     }
 }
