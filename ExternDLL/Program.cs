@@ -10,6 +10,7 @@ namespace ExternDLL
     static class Program
     {
         static HttpListener listener;
+        //const string AuthKey = "GJJHF-787865-23883-HUZT"; // Definiere den Authentifizierungsschlüssel
 
         // Variablen für die Datenbankverbindung und Authentifizierungsschlüssel
         private static string Server;
@@ -21,7 +22,9 @@ namespace ExternDLL
         [STAThread]
         static void Main(string[] args)
         {
+            LoadConfig();
             StartServer();
+
         }
 
         static void LoadConfig()
