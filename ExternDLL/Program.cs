@@ -3,54 +3,149 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ExternDLL
 {
+    public class MyService : ServiceBase
+    {
+        public MyService()
+        {
+            this.ServiceName = "JTL_SMIT_externDLL";
+        }
+
+        static void Main(string[] args)
+        {
+            // Überprüfen, ob das Programm als Dienst oder als Konsolenanwendung laufen soll
+            if (Environment.UserInteractive)
+            {
+                // Konsolenmodus
+                RunAsConsole(args);
+            }
+            else
+            {
+                // Dienstmodus
+                ServiceBase.Run(new MyService());
+            }
+        }
+
+        private static void RunAsConsole(string[] args)
+        {
+            Console.WriteLine("Starting in console mode...");
+            Program.LoadConfig();
+            Program.StartServer();
+
+            Console.WriteLine("Press Enter to stop...");
+
+            while (Program.Running)
+            {
+                // Überprüfen, ob eine Eingabe vorliegt
+                if (Console.In.Peek() != -1)
+                {
+                    string input = Console.ReadLine();
+                    if (input.ToLower() == "exit") // Benutzer kann "exit" eingeben, um den Dienst zu stoppen
+                    {
+                        Program.Running = false;
+                    }
+                }
+
+                Thread.Sleep(100); // Kleine Verzögerung, um CPU-Nutzung zu reduzieren
+            }
+
+            Program.StopServer();
+            Console.WriteLine("Stopped.");
+        }
+
+
+        protected override void OnStart(string[] args)
+        {
+            base.OnStart(args);
+            Program.LoadConfig();
+            Program.StartServer();
+        }
+
+        protected override void OnStop()
+        {
+            base.OnStop();
+            Program.StopServer();
+        }
+    }
+
     static class Program
     {
         static HttpListener listener;
-        //const string AuthKey = "GJJHF-787865-23883-HUZT"; // Definiere den Authentifizierungsschlüssel
+        public static bool Running { get; set; }
 
-        // Variablen für die Datenbankverbindung und Authentifizierungsschlüssel
         private static string Server;
         private static string Datenbank;
         private static string Benutzer;
         private static string Passwort;
         private static string AuthKey;
 
-        [STAThread]
-        static void Main(string[] args)
+        public static void LoadConfig()
         {
-            LoadConfig();
-            StartServer();
+            try
+            {
+                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
+                var configText = File.ReadAllText(configPath);
+                dynamic config = JsonConvert.DeserializeObject(configText);
 
-        }
 
-        static void LoadConfig()
-        {
-            var configText = File.ReadAllText("config.json");
-            dynamic config = JsonConvert.DeserializeObject(configText);
             Server = config.Server;
             Datenbank = config.Datenbank;
             Benutzer = config.Benutzer;
             Passwort = config.Passwort;
             AuthKey = config.AuthKey;
+            }
+            catch (Exception ex)
+            {
+                // Log the error and exit the application or handle it appropriately
+                Console.WriteLine($"Error loading configuration: {ex.Message}");
+                Environment.Exit(1);
+            }
+
         }
 
-        static void StartServer()
+        public static void StartServer()
         {
+            Running = true;
+            try
+            {
             listener = new HttpListener();
             listener.Prefixes.Add("http://localhost:5000/");
             listener.Start();
             Console.WriteLine("Listening for connections on http://localhost:5000/");
-
             Logger logger = new Logger(@"C:\log\");
+                Task.Run(() =>
+                {
+                    while (listener.IsListening)
+                    {
+                        HandleIncomingConnections(logger).GetAwaiter().GetResult();
+                    }
+                });
 
-            while (true)
+            }
+            catch (Exception ex)
             {
-                HandleIncomingConnections(logger).GetAwaiter().GetResult();
+                // Log the error and exit the application or handle it appropriately
+                Console.WriteLine($"Error starting server: {ex.Message}");
+                Environment.Exit(1);
+            }
+
+
+        }
+
+        public static void StopServer()
+        {
+
+            Running = false;
+            if (listener != null && listener.IsListening)
+            {
+                listener.Stop();
+                listener.Close();
             }
         }
 
