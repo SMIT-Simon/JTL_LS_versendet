@@ -3,8 +3,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using ExternDLL;
 
 namespace ExternDLL
 {
@@ -12,6 +10,12 @@ namespace ExternDLL
     {
         static HttpListener listener;
         const string AuthKey = "GJJHF-787865-23883-HUZT"; // Definiere den Authentifizierungsschlüssel
+
+        // Konstanten für die Datenbankverbindung
+        private const string Server = "localhost\\JTLWAWI";
+        private const string Datenbank = "eazybusiness";
+        private const string Benutzer = "sa";
+        private const string Passwort = "sa04jT14";
 
         [STAThread]
         static void Main(string[] args)
@@ -36,9 +40,16 @@ namespace ExternDLL
 
         static async Task HandleIncomingConnections(Logger logger)
         {
-            int kUser = 0;
-            int kLieferschein = 0;
+            int para1 = 0;
+            int para2 = 0;
+            int para3 = 0;
+            int para4 = 0;
+            string para5 = "";
+            string para6 = "";
+            string para7 = "";
+            string para8 = "";
             string authKey = "";
+            int aktion = 0;
 
             HttpListenerContext ctx = await listener.GetContextAsync();
 
@@ -46,7 +57,7 @@ namespace ExternDLL
             HttpListenerResponse resp = ctx.Response;
 
             string responseString = "";
-            byte[] responseData; // Deklariere responseData hier
+            byte[] responseData;
 
             if (req.HttpMethod == "POST")
             {
@@ -65,38 +76,46 @@ namespace ExternDLL
                             string key = keyValue[0];
                             string value = keyValue[1];
 
-                            if (key == "kUser")
+                            switch (key)
                             {
-                                int.TryParse(value, out kUser);
-                            }
-                            else if (key == "kLieferschein")
-                            {
-                                int.TryParse(value, out kLieferschein);
-                            }
-                            else if (key == "key") // Überprüfe den Authentifizierungsschlüssel
-                            {
-                                authKey = value;
+                                case "para1": int.TryParse(value, out para1); break;
+                                case "para2": int.TryParse(value, out para2); break;
+                                case "para3": int.TryParse(value, out para3); break;
+                                case "para4": int.TryParse(value, out para4); break;
+                                case "para5": para5 = value; break;
+                                case "para6": para6 = value; break;
+                                case "para7": para7 = value; break;
+                                case "para8": para8 = value; break;
+                                case "key": authKey = value; break;
+                                case "aktion": int.TryParse(value, out aktion); break;
                             }
                         }
                     }
                 }
 
-                // Hier werden die Parameter an JTL_WorkflowLieferschein übergeben
-                Worker worker = new Worker();
-                string server = "localhost\\JTLWAWI";
-                string datenbank = "eazybusiness";
-                string benutzer = "sa";
-                string passwort = "sa04jT14";
-                int eventID = 3; // Event-ID für "Lieferschein versendet"
+                if (authKey != AuthKey)
+                {
+                    responseString = "Ungültiger Authentifizierungsschlüssel";
+                }
+                else
+                {
+                    Worker worker = new Worker();
+                    switch (aktion)
+                    {
+                        case 1:
+                            int eventID = 3; // Event-ID für "Lieferschein versendet"
+                            worker.JTL_WorkflowLieferschein(Server, Datenbank, Benutzer, Passwort, para1, para2, eventID);
+                            break;
+                        case 2:
+                            // Führe eine andere Aktion aus, verwende para1 bis para8 nach Bedarf
+                            break;
+                            // Weitere Fälle ...
+                    }
 
-                worker.JTL_WorkflowLieferschein(server, datenbank, benutzer, passwort, kUser, kLieferschein, eventID);
+                    responseString = $"Aktion: {aktion}, Para1: {para1}, Para2: {para2}, Para3: {para3}, Para4: {para4}, Para5: {para5}, Para6: {para6}, Para7: {para7}, Para8: {para8}";
 
-                    responseString = $"KUser: {kUser}, KLieferschein: {kLieferschein}";
-
-                // Anfrage protokollieren
-                string requestMethod = req.HttpMethod;
-                string requestParameters = postData;
-                logger.LogRequest(requestMethod, requestParameters);
+                    logger.LogRequest(req.HttpMethod, postData);
+                }
             }
 
             responseData = Encoding.UTF8.GetBytes(responseString);
@@ -107,6 +126,5 @@ namespace ExternDLL
             await resp.OutputStream.WriteAsync(responseData, 0, responseData.Length);
             resp.Close();
         }
-
     }
 }
