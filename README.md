@@ -38,14 +38,12 @@ Nach dem Start des Servers kann er POST-Anfragen an `http://localhost:5000/` ent
 Du kannst `curl` verwenden, um eine POST-Anfrage an den Server zu senden. Hier ist ein Beispielbefehl:
 
 ##Für einen Lieferschein-Workflow:
-
-curl -X POST http://localhost:5000/ -d "para1=123&para2=456&para3=789&para4=1011&para5=wert5&para6=wert6&para7=wert7&para8=wert8&key=GJJHF-787865-23883-HUZT&aktion=1"
-Ersetze die Werte entsprechend den Anforderungen deiner Anwendung.
+- curl -X POST http://localhost:5000/ -d "para1=123&para2=456&para3=789&para4=1011&para5=wert5&para6=wert6&para7=wert7&para8=wert8&key=GJJHF-787865-23883-HUZT&aktion=1"
+#Ersetze die Werte entsprechend den Anforderungen deiner Anwendung.
 
 ##Für den Versanddatenimport:
-
-curl -X POST http://localhost:5000/ -d "para5=AU-202311-10000-001&para6=Trackingcode123456&para7=irgendwelcheVersandInfos&key=GJJHF-787865-23883-HUZT&aktion=2"
-Ersetze die Werte entsprechend den Anforderungen deiner Anwendung.
+- curl -X POST http://localhost:5000/ -d "para5=AU-202311-10000-001&para6=Trackingcode123456&para7=irgendwelcheVersandInfos&key=GJJHF-787865-23883-HUZT&aktion=2"
+#Ersetze die Werte entsprechend den Anforderungen deiner Anwendung.
 
 
 ## Protokollierung
