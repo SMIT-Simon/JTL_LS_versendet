@@ -1,7 +1,7 @@
 # Mein C# HTTP Server Projekt
 
 ## Überblick
-Dieses Projekt implementiert einen einfachen HTTP-Server in C#, der POST-Anfragen entgegennimmt. Die Anfragen enthalten Daten zu einem Benutzer (`User`) und einem Lieferschein (`Lieferschein`). Mithilfe der `JTLwawiExtern.dll` werden spezifische Aktionen in der JTL-Wawi Software ausgeführt, insbesondere Workflows für den übergebenen Lieferschein. Zusätzlich werden die Anfragen in einem Log-Verzeichnis (`C:\\log`) protokolliert.
+Dieses Projekt implementiert einen einfachen HTTP-Server in C#, der POST-Anfragen entgegennimmt. Die Anfragen können eine Vielzahl von Parametern enthalten, die je nach ausgeführter Aktion variieren. Der Server ist so konzipiert, dass er flexibel auf verschiedene Parameter reagieren und unterschiedliche Funktionen ausführen kann, je nachdem, welche Aktion angefordert wird. Ein Authentifizierungsschlüssel (`key`) wird verwendet, um sicherzustellen, dass nicht autorisierter Code nicht ausgeführt wird. Mithilfe der `JTLwawiExtern.dll` werden spezifische Aktionen in der JTL-Wawi Software ausgeführt, basierend auf den übergebenen Parametern.
 
 ## Komponenten
 Das Projekt besteht aus mehreren Schlüsselkomponenten:
@@ -32,14 +32,14 @@ Um den Dienst zu deinstallieren, folge diesen Schritten:
 - Ersetze `[Dienstname]` mit dem Namen des zu deinstallierenden Dienstes.
 
 ## Verwendung
-Nach dem Start des Servers kann er POST-Anfragen an `http://localhost:5000/` entgegennehmen. Die Anfragen sollten die Parameter `kUser` und `kLieferschein` enthalten.
+Nach dem Start des Servers kann er POST-Anfragen an `http://localhost:5000/` entgegennehmen. Die Anfragen können eine Vielzahl von Parametern enthalten (`para1`, `para2`, `para3`, `para4`, `para5`, `para6`, `para7`, `para8`), deren Bedeutung und Verwendung von der angeforderten Aktion (`aktion`) abhängt. Der `key`-Parameter ist für die Authentifizierung erforderlich.
 
 ### Beispielhafte `curl`-Anfrage
 Du kannst `curl` verwenden, um eine POST-Anfrage an den Server zu senden. Hier ist ein Beispielbefehl:
 
-### bash 
-curl -d "kUser=123&kLieferschein=456" http://localhost:5000/
-Ersetze 123 und 456 durch die tatsächlichen Werte für kUser und kLieferschein.
+### bash
+curl -X POST http://localhost:5000/ -d "para1=123&para2=456&para3=789&para4=1011&para5=wert5&para6=wert6&para7=wert7&para8=wert8&key=GJJHF-787865-23883-HUZT&aktion=1"
+Ersetze die Werte entsprechend den Anforderungen deiner Anwendung.
 
 ## Protokollierung
 Jede Anfrage wird im Verzeichnis `C:\\log` mit einem Zeitstempel, der HTTP-Methode und den Parametern der Anfrage protokolliert.
