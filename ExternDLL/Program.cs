@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace ExternDLL
 {
@@ -115,6 +116,8 @@ namespace ExternDLL
                 else
                 {
                     Worker worker = new Worker();
+
+
                     switch (aktion)
                     {
                         case 1:
@@ -122,7 +125,12 @@ namespace ExternDLL
                             worker.JTL_WorkflowLieferschein(Server, Datenbank, Benutzer, Passwort, para1, para2, eventID);
                             break;
                         case 2:
-                            // Führe eine andere Aktion aus, verwende para1 bis para8 nach Bedarf
+                            WorkerVersand workerVersand = new WorkerVersand();
+                            // Erstelle eine Liste von Versandinformationen basierend auf den Parametern 
+                            List<Versandinformation> versandinfos = new List<Versandinformation>();
+                            // Füge Versandinformationen hinzu.
+                            versandinfos.Add(new Versandinformation { Id = para5, Versanddatum = DateTime.Now, TrackingId = para6, VersandInfo = para7 });
+                            workerVersand.VersanddatenImport(Server, Datenbank, Benutzer, Passwort, para1, versandinfos);
                             break;
                             // Weitere Fälle ...
                     }

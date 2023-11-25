@@ -87,9 +87,11 @@
   <ItemGroup>
     <Compile Include="Logger.cs" />
     <Compile Include="ValidateAssembly.cs" />
+    <Compile Include="Versandinformation.cs" />
     <Compile Include="Worker.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WorkerVersand.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
