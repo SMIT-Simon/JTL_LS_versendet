@@ -16,6 +16,20 @@ Um das Projekt zu verwenden, müssen Sie folgende Schritte ausführen:
 2. Klone das Repository in deinen lokalen Speicher.
 3. Öffne das Projekt in deiner bevorzugten C#-Entwicklungsumgebung (z.B. Visual Studio).
 4. Führe das Projekt aus, um den Server zu starten.
+5. Alternativ kannst du das Programm auch veröffentlichen (publish) und als Dienst auf deinem System installieren.
+
+### Als Dienst installieren
+Um das Programm als Dienst zu installieren, führe folgende Schritte aus:
+- Veröffentliche das Programm in einem geeigneten Verzeichnis.
+- Öffne die Eingabeaufforderung als Administrator.
+- Führe den Befehl aus: `sc create [Dienstname] binPath= "[Pfad zum veröffentlichten Programm]"`. Ersetze `[Dienstname]` mit einem Namen für den Dienst und `[Pfad zum veröffentlichten Programm]` mit dem Pfad zur ausführbaren Datei deines Programms.
+- Starte den Dienst mit `sc start [Dienstname]`.
+
+### Dienst deinstallieren
+Um den Dienst zu deinstallieren, folge diesen Schritten:
+- Stoppe den Dienst zuerst mit dem Befehl `sc stop [Dienstname]`.
+- Deinstalliere den Dienst mit `sc delete [Dienstname]`.
+- Ersetze `[Dienstname]` mit dem Namen des zu deinstallierenden Dienstes.
 
 ## Verwendung
 Nach dem Start des Servers kann er POST-Anfragen an `http://localhost:5000/` entgegennehmen. Die Anfragen sollten die Parameter `kUser` und `kLieferschein` enthalten.
