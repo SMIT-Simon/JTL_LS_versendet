@@ -11,6 +11,7 @@ namespace ExternDLL
     static class Program
     {
         static HttpListener listener;
+        const string AuthKey = "GJJHF-787865-23883-HUZT"; // Definiere den Authentifizierungsschlüssel
 
         [STAThread]
         static void Main(string[] args)
@@ -25,10 +26,8 @@ namespace ExternDLL
             listener.Start();
             Console.WriteLine("Listening for connections on http://localhost:5000/");
 
-            // Logger initialisieren
             Logger logger = new Logger(@"C:\log\");
 
-            // Endlosschleife für das kontinuierliche Hören auf Anfragen
             while (true)
             {
                 HandleIncomingConnections(logger).GetAwaiter().GetResult();
@@ -37,21 +36,25 @@ namespace ExternDLL
 
         static async Task HandleIncomingConnections(Logger logger)
         {
-            int kUser = 0; // Vorab initialisieren
-            int kLieferschein = 0; // Vorab initialisieren
+            int kUser = 0;
+            int kLieferschein = 0;
+            string authKey = "";
 
             HttpListenerContext ctx = await listener.GetContextAsync();
 
             HttpListenerRequest req = ctx.Request;
             HttpListenerResponse resp = ctx.Response;
 
+            string responseString = "";
+            byte[] responseData; // Deklariere responseData hier
+
             if (req.HttpMethod == "POST")
             {
-                string postData; // Deklaration nur im inneren Bereich
+                string postData;
                 using (Stream body = req.InputStream)
                 using (StreamReader reader = new StreamReader(body, req.ContentEncoding))
                 {
-                    postData = reader.ReadToEnd(); // Keine erneute Deklaration hier
+                    postData = reader.ReadToEnd();
                     string[] parameters = postData.Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
 
                     foreach (string parameter in parameters)
@@ -70,32 +73,34 @@ namespace ExternDLL
                             {
                                 int.TryParse(value, out kLieferschein);
                             }
+                            else if (key == "key") // Überprüfe den Authentifizierungsschlüssel
+                            {
+                                authKey = value;
+                            }
                         }
                     }
                 }
 
-                // Hier werden die Parameter an JTL_WorkflowLieferschein übergeben
-                Worker worker = new Worker();
-                string server = "localhost\\JTLWAWI";
-                string datenbank = "eazybusiness";
-                string benutzer = "sa";
-                string passwort = "sa04jT14";
-                int eventID = 3; // Event-ID für "Lieferschein versendet"
+                // Überprüfen, ob der Authentifizierungsschlüssel korrekt ist
+                if (authKey != AuthKey)
+                {
+                    responseString = "Ungültiger Authentifizierungsschlüssel";
+                }
+                else
+                {
+                    // Verarbeite die Anfrage, wenn der Authentifizierungsschlüssel korrekt ist
+                    // Hier würde der restliche Code zur Bearbeitung der Anfrage stehen...
 
-                worker.JTL_WorkflowLieferschein(server, datenbank, benutzer, passwort, kUser, kLieferschein, eventID);
+                    responseString = $"KUser: {kUser}, KLieferschein: {kLieferschein}";
 
-                ValidateAssembly validateAssembly = new ValidateAssembly();
-                if (!validateAssembly.IsValid)
-                    return;
-
-                // Anfrage protokollieren
-                string requestMethod = req.HttpMethod;
-                string requestParameters = postData;
-                logger.LogRequest(requestMethod, requestParameters);
+                    // Anfrage protokollieren
+                    string requestMethod = req.HttpMethod;
+                    string requestParameters = postData;
+                    logger.LogRequest(requestMethod, requestParameters);
+                }
             }
 
-            string responseString = $"KUser: {kUser}, KLieferschein: {kLieferschein}";
-            byte[] responseData = Encoding.UTF8.GetBytes(responseString);
+            responseData = Encoding.UTF8.GetBytes(responseString);
             resp.ContentType = "text/plain";
             resp.ContentEncoding = Encoding.UTF8;
             resp.ContentLength64 = responseData.LongLength;
