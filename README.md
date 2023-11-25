@@ -34,6 +34,13 @@ Um den Dienst zu deinstallieren, folge diesen Schritten:
 ## Verwendung
 Nach dem Start des Servers kann er POST-Anfragen an `http://localhost:5000/` entgegennehmen. Die Anfragen sollten die Parameter `kUser` und `kLieferschein` enthalten.
 
+### Beispielhafte `curl`-Anfrage
+Du kannst `curl` verwenden, um eine POST-Anfrage an den Server zu senden. Hier ist ein Beispielbefehl:
+
+### bash 
+curl -d "kUser=123&kLieferschein=456" http://localhost:5000/
+Ersetze 123 und 456 durch die tatsächlichen Werte für kUser und kLieferschein.
+
 ## Protokollierung
 Jede Anfrage wird im Verzeichnis `C:\\log` mit einem Zeitstempel, der HTTP-Methode und den Parametern der Anfrage protokolliert.
 
