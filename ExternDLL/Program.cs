@@ -81,23 +81,22 @@ namespace ExternDLL
                     }
                 }
 
-                // Überprüfen, ob der Authentifizierungsschlüssel korrekt ist
-                if (authKey != AuthKey)
-                {
-                    responseString = "Ungültiger Authentifizierungsschlüssel";
-                }
-                else
-                {
-                    // Verarbeite die Anfrage, wenn der Authentifizierungsschlüssel korrekt ist
-                    // Hier würde der restliche Code zur Bearbeitung der Anfrage stehen...
+                // Hier werden die Parameter an JTL_WorkflowLieferschein übergeben
+                Worker worker = new Worker();
+                string server = "localhost\\JTLWAWI";
+                string datenbank = "eazybusiness";
+                string benutzer = "sa";
+                string passwort = "sa04jT14";
+                int eventID = 3; // Event-ID für "Lieferschein versendet"
+
+                worker.JTL_WorkflowLieferschein(server, datenbank, benutzer, passwort, kUser, kLieferschein, eventID);
 
                     responseString = $"KUser: {kUser}, KLieferschein: {kLieferschein}";
 
-                    // Anfrage protokollieren
-                    string requestMethod = req.HttpMethod;
-                    string requestParameters = postData;
-                    logger.LogRequest(requestMethod, requestParameters);
-                }
+                // Anfrage protokollieren
+                string requestMethod = req.HttpMethod;
+                string requestParameters = postData;
+                logger.LogRequest(requestMethod, requestParameters);
             }
 
             responseData = Encoding.UTF8.GetBytes(responseString);
