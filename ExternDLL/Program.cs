@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace ExternDLL
 {
@@ -11,16 +12,28 @@ namespace ExternDLL
         static HttpListener listener;
         const string AuthKey = "GJJHF-787865-23883-HUZT"; // Definiere den Authentifizierungsschlüssel
 
-        // Konstanten für die Datenbankverbindung
-        private const string Server = "localhost\\JTLWAWI";
-        private const string Datenbank = "eazybusiness";
-        private const string Benutzer = "sa";
-        private const string Passwort = "sa04jT14";
+        // Variablen für die Datenbankverbindung und Authentifizierungsschlüssel
+        private static string Server;
+        private static string Datenbank;
+        private static string Benutzer;
+        private static string Passwort;
+        private static string AuthKey;
 
         [STAThread]
         static void Main(string[] args)
         {
             StartServer();
+        }
+
+        static void LoadConfig()
+        {
+            var configText = File.ReadAllText("config.json");
+            dynamic config = JsonConvert.DeserializeObject(configText);
+            Server = config.Server;
+            Datenbank = config.Datenbank;
+            Benutzer = config.Benutzer;
+            Passwort = config.Passwort;
+            AuthKey = config.AuthKey;
         }
 
         static void StartServer()
